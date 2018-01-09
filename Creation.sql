@@ -1,5 +1,14 @@
 /*
 *   TD1 
+*   DROP
+*/
+DROP TABLE ExemplaireEmprunte;
+DROP TABLE Exemplaire;
+DROP TABLE Livre;
+DROP TABLE Emprunt;
+DROP TABLE Adherent;
+
+/*
 *   Create table
 */
 CREATE TABLE Adherent (
@@ -42,16 +51,6 @@ CREATE TABLE ExemplaireEmprunte (
     PRIMARY KEY (numInv),
     CONSTRAINT FK_emprunt FOREIGN KEY (numA, dateE) REFERENCES Emprunt(numA, dateE)
 );
-
-/*
-*   DROP
-*/
-DROP TABLE ExemplaireEmprunte;
-DROP TABLE Exemplaire;
-DROP TABLE Livre;
-DROP TABLE Emprunt;
-DROP TABLE Adherent;
-
 
 /*
 *   Insert
