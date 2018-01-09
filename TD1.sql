@@ -14,7 +14,7 @@ CREATE TABLE Emprunt (
     dateE DATE,
     dateR DATE,
     PRIMARY KEY (numA, dateE),
-    FOREIGN KEY (numA) REFERENCES Adherent(numA)
+    CONSTRAINT FK_numA FOREIGN KEY (numA) REFERENCES Adherent(numA)
 );
 
 CREATE TABLE Livre (
@@ -32,7 +32,7 @@ CREATE TABLE Exemplaire (
     numInv NUMBER,
     ISBN NUMBER(4),
     PRIMARY KEY (numInv),
-    FOREIGN KEY (ISBN) REFERENCES Livre(ISBN)
+    CONSTRAINT FK_livre FOREIGN KEY (ISBN) REFERENCES Livre(ISBN)
 );
 
 CREATE TABLE ExemplaireEmprunte (
@@ -40,7 +40,7 @@ CREATE TABLE ExemplaireEmprunte (
     numA NUMBER(4),
     dateE DATE,
     PRIMARY KEY (numInv),
-    CONSTRAINT FK_ FOREIGN KEY (numA, dateE) REFERENCES Emprunt(numA, dateE)
+    CONSTRAINT FK_emprunt FOREIGN KEY (numA, dateE) REFERENCES Emprunt(numA, dateE)
 );
 
 /*
