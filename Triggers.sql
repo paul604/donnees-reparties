@@ -20,7 +20,7 @@ create or replace TRIGGER max_exem_emp
 begin
     SELECT * into ligne_exem_emp FROM ADHERENT 
         WHERE (SELECT COUNT(*) from EXEMPLAIREEMPRUNTE 
-        WHERE ADHERENT.NUMA=EXEMPLAIREEMPRUNTE.NUMA)>=5;
+        WHERE ADHERENT.NUMA=EXEMPLAIREEMPRUNTE.NUMA)>5;
     raise_application_error (-20001, 'un adhérant a emprunté plus de 5 exemplaires');
     exception
         when no_data_found then null;
@@ -31,3 +31,15 @@ end;
 /*
 * up nbE and dateDE in Livre where add in ExemplaireEmprunte
 */
+create or replace trigger up_val_livre
+    AFTER UPDATE ON EXEMPLAIREEMPRUNTE for each row
+BEGIN
+    UPDATE LIVRE
+        SET NBE = NBE+1,
+            DATEDE = :NEW.dateE
+        WHERE ISBN IN (
+            SELECT ISBN 
+            FROM EXEMPLAIRE 
+            where EXEMPLAIRE.NUMINV = :NEW.numInv 
+        );
+END;
