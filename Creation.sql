@@ -13,9 +13,9 @@ DROP TABLE Adherent;
 */
 CREATE TABLE Adherent (
     numA NUMBER(4) PRIMARY KEY,
-    nom VARCHAR(20),
-    prenom VARCHAR(20),
-    adresse VARCHAR(20)
+    nom VARCHAR2(100),
+    prenom VARCHAR2(100),
+    adresse VARCHAR2(100)
 );
 
 CREATE TABLE Emprunt (
@@ -28,10 +28,10 @@ CREATE TABLE Emprunt (
 
 CREATE TABLE Livre (
     ISBN NUMBER(8),
-    titre VARCHAR(20),
-    edtiteur VARCHAR(20),
-    aneeParution NUMBER(4),
-    auteurs VARCHAR(20),
+    titre VARCHAR2(100),
+    editeur VARCHAR2(100),
+    anneeParution NUMBER(4),
+    auteurs VARCHAR2(100),
     nbE NUMBER,
     dateDE DATE,
     PRIMARY KEY (ISBN)
