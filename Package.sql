@@ -94,3 +94,13 @@ begin
     auteurs(2) := '831a';
     MAJ.CreerLivre(666, 'Herobrine, true story', 'Mojang', 2018, auteurs, 0, NULL);
 end;
+-- CreerExemplaire
+declare numInv MAJ.tabNumInv;
+begin
+    numInv := MAJ.tabNumInv();
+    numInv.extend;
+    numInv(1) := '1';
+    numInv.extend;
+    numInv(2) := '2';
+    MAJ.CreerExemplaire(numInv, 666);
+end;
