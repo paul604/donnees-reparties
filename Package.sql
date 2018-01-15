@@ -24,6 +24,9 @@ PROCEDURE CreerExemplaire(tab_numInv tabNumInv, isbn NUMBER);
 
 PROCEDURE SupExemplaire(tab_numInv tabNumInv);
 
+
+PROCEDURE CreerExemplaire(tab_numInv tabNumInv, numA NUMBER, dateE DATE);
+
 END;
 
 /*
