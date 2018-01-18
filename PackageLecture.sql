@@ -8,6 +8,8 @@ PROCEDURE listAdherent(liste out liste_Cursor);
 
 PROCEDURE listEmpruntsForAdherent(idAdh NUMBER, liste out liste_Cursor);
 
+PROCEDURE listLivre(liste out liste_Cursor);
+
 END;
 
 /*
@@ -35,7 +37,15 @@ PROCEDURE listEmpruntsForAdherent(idAdh NUMBER, liste out liste_Cursor) IS
                     WHERE numA = idAdh
                 );
         COMMIT;
-    END;
+    END; 
+
+PROCEDURE listLivre(liste out liste_Cursor) IS
+    BEGIN
+        SET TRANSACTION READ ONLY;
+        OPEN liste FOR 
+
+        COMMIT;
+    END; 
 
 END;
 
