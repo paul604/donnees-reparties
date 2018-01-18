@@ -24,4 +24,10 @@ PROCEDURE CreerExemplaire(tab_numInv tabNumInv, isbn NUMBER);
 
 PROCEDURE SupExemplaire(tab_numInv tabNumInv);
 
+PROCEDURE CreerEmprunt(tab_numInv tabNumInv, numadh NUMBER);
+
+PROCEDURE retoureEx( tab_numInv tabNumInv);
+
+procedure deleteAdh(numAdh NUMBER);
+
 END;

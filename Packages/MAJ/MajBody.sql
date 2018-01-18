@@ -8,7 +8,7 @@ PROCEDURE CreerAdherent(num_ad NUMBER, nom_ad VARCHAR2, prenom_ad VARCHAR2, addr
         SET TRANSACTION READ WRITE;
         INSERT INTO ADHERENT VALUES (num_ad, nom_ad, prenom_ad, addr_ad);
         COMMIT;
-        EXCEPTION
+    EXCEPTION
         WHEN OTHERS THEN
             IF SQLCODE = -0001 THEN
                 RollBack;
@@ -49,7 +49,7 @@ PROCEDURE CreerExemplaire(tab_numInv tabNumInv, isbn NUMBER) IS
             INSERT INTO EXEMPLAIRE VALUES(numInv, isbn);
         END LOOP;
         COMMIT;
-        EXCEPTION
+    EXCEPTION
         WHEN OTHERS THEN
             IF SQLCODE = -0001 THEN
                 RollBack;
@@ -66,15 +66,64 @@ PROCEDURE SupExemplaire(tab_numInv tabNumInv) IS
         FOR i IN tab_numInv.first .. tab_numInv.last LOOP
             numInvSup := tab_numInv(i);
             DELETE FROM EXEMPLAIRE WHERE EXEMPLAIRE.numInv = numInvSup;
-            if SQL%NOTFOUND then
+            IF SQL%NOTFOUND then
                 RAISE Pas_exemplaire;
             END IF;
         END LOOP;
         COMMIT;
-        EXCEPTION
+    EXCEPTION
         WHEN Pas_exemplaire THEN
             RollBack;
             RAISE_APPLICATION_ERROR(-20006, numInvSup || ' pas trouvée');
+    END;
+    
+PROCEDURE CreerEmprunt(tab_numInv tabNumInv, numadh NUMBER) is
+    numInv EXEMPLAIRE.NUMINV%TYPE;
+    BEGIN
+        SET TRANSACTION READ WRITE;
+        numInv := 0;
+        INSERT INTO EMPRUNT VALUES ( numadh, SYSDATE, SYSDATE+15);
+        FOR i IN tab_numInv.first .. tab_numInv.last LOOP
+            numInv := tab_numInv(i);
+            INSERT INTO EXEMPLAIREEMPRUNTE VALUES(numInv, numadh,SYSDATE);
+        END LOOP;
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            IF SQLCODE = -0001 THEN 
+                ROLLBACK;
+                RAISE_APPLICATION_ERROR(-20001, numInv || ' existe déjà !!');
+            END IF;
+    END;
+    
+PROCEDURE retoureEx( tab_numInv tabNumInv) IS    
+    numInv EXEMPLAIRE.NUMINV%TYPE;
+    Pas_exemplaire EXCEPTION;
+    BEGIN
+        SET TRANSACTION READ WRITE;
+        numInv := 0;
+        FOR i IN tab_numInv.first .. tab_numInv.last LOOP
+            numInv := tab_numInv(i);
+            DELETE FROM EXEMPLAIREEMPRUNTE 
+                WHERE(EXEMPLAIREEMPRUNTE.NUMINV = numInv);
+            IF SQL%NOTFOUND then
+                RAISE Pas_exemplaire;
+            END IF;
+        END LOOP; 
+        COMMIT;
+    EXCEPTION
+        WHEN Pas_exemplaire THEN
+            ROLLBACK;
+            RAISE_APPLICATION_ERROR(-20001, numInv || ' pas trouvée');
+    END;
+
+PROCEDURE deleteAdh(numAdh NUMBER) is
+    BEGIN
+        SET TRANSACTION READ WRITE;
+        DELETE FROM EXEMPLAIREEMPRUNTE WHERE numA=numAdh;
+        DELETE FROM EMPRUNT WHERE numA=numAdh;
+        DELETE FROM ADHERENT WHERE numA=numAdh;
+        COMMIT;
     END;
 
 END;

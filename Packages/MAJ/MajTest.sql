@@ -30,7 +30,7 @@ declare numInv MAJ.tabNumInv;
 begin
     numInv := MAJ.tabNumInv();
     numInv.extend;
-    numInv(1) := 6663;
+    numInv(1) := 6661;
     numInv.extend;
     numInv(2) := 6662;
     MAJ.SupExemplaire(numInv);
