@@ -77,6 +77,12 @@ PROCEDURE CreerExemplaire(tab_numInv tabNumInv, isbn NUMBER) IS
             INSERT INTO EXEMPLAIRE VALUES(numInv, isbn);
         END LOOP;
         COMMIT;
+        EXCEPTION
+        WHEN OTHERS THEN
+            IF SQLCODE = -0001 THEN
+                RollBack;
+                RAISE_APPLICATION_ERROR(-20001, numInv || ' existe déjà');
+            END IF;
     END;
     
 PROCEDURE SupExemplaire(tab_numInv tabNumInv) IS
