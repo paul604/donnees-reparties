@@ -10,6 +10,8 @@ PROCEDURE listEmpruntsForAdherent(idAdh NUMBER, liste out liste_Cursor);
 
 PROCEDURE listLivre(liste out liste_Cursor);
 
+PROCEDURE listAdherentRetard(liste out liste_Cursor);
+
 END;
 
 /*
@@ -59,7 +61,25 @@ PROCEDURE listLivre(liste out liste_Cursor) IS
             FROM Livre liv;
         COMMIT;
     END; 
-
+    
+PROCEDURE listAdherentRetard(liste out liste_Cursor) IS
+    BEGIN
+        SET TRANSACTION READ ONLY;
+        OPEN liste FOR 
+            SELECT adh.numA, adh.NOM, emp.DATEE, exEmp.NUMINV, liv.TITRE
+                FROM ADHERENT adh,
+                EMPRUNT emp,
+                EXEMPLAIREEMPRUNTE exEmp,
+                EXEMPLAIRE ex,
+                LIVRE liv
+                WHERE adh.NUMA = emp.NUMA
+                    AND emp.DATER < SYSDATE
+                    AND emp.NUMA = exEmp.NUMA
+                    AND emp.dateE = exEmp.dateE
+                    AND exEmp.NUMINV = ex.NUMINV
+                    AND ex.ISBN = liv.ISBN;
+        COMMIT;
+        END;
 END;
 
 /*
@@ -76,4 +96,8 @@ PRINT :liste;
 --listLivre
 VARIABLE liste REFCURSOR;
 EXECUTE Lecture.listLivre(:liste);
+PRINT :liste;
+--listAdherentRetard
+VARIABLE liste REFCURSOR;
+EXECUTE Lecture.listAdherentRetard(:liste);
 PRINT :liste;
