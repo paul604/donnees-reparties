@@ -1,32 +1,4 @@
 /*
-*  PACKAGE MAJ init 
-*/
-CREATE OR REPLACE PACKAGE MAJ IS
-
-PROCEDURE CreerAdherent(
-    num_ad NUMBER,
-    nom_ad VARCHAR2, 
-    prenom_ad VARCHAR2, 
-    addr_ad VARCHAR2);
-
-TYPE tabChaine is VARRAY(5) of VARCHAR2(10);
-PROCEDURE CreerLivre(
-    isbn NUMBER, 
-    titre VARCHAR2, 
-    editeur VARCHAR2, 
-    anneeParution NUMBER, 
-    tab_auteurs tabChaine, 
-    nBE NUMBER, 
-    dateDE DATE);
-    
-TYPE tabNumInv is VARRAY(5) of NUMBER(4);
-PROCEDURE CreerExemplaire(tab_numInv tabNumInv, isbn NUMBER);
-
-PROCEDURE SupExemplaire(tab_numInv tabNumInv);
-
-END;
-
-/*
 * body MAJ
 */
 create or replace PACKAGE BODY MAJ IS
@@ -52,8 +24,8 @@ PROCEDURE CreerAdherent(num_ad NUMBER, nom_ad VARCHAR2, prenom_ad VARCHAR2, addr
                 RAISE_APPLICATION_ERROR(-20005, 'error' || SQLCODE);
             END IF;
     END;
-    
-PROCEDURE CreerLivre(isbn NUMBER, titre VARCHAR2, editeur VARCHAR2, anneeParution NUMBER, 
+
+PROCEDURE CreerLivre(isbn NUMBER, titre VARCHAR2, editeur VARCHAR2, anneeParution NUMBER,
         tab_auteurs tabChaine, nBE NUMBER, dateDE DATE) IS
     auteurs LIVRE.AUTEURS%TYPE;
     BEGIN
@@ -65,7 +37,7 @@ PROCEDURE CreerLivre(isbn NUMBER, titre VARCHAR2, editeur VARCHAR2, anneeParutio
         INSERT INTO LIVRE VALUES(isbn, titre, editeur, anneeParution, auteurs, nBE, dateDE);
         COMMIT;
     END;
-    
+
 
 PROCEDURE CreerExemplaire(tab_numInv tabNumInv, isbn NUMBER) IS
     numInv EXEMPLAIRE.NUMINV%TYPE;
@@ -84,7 +56,7 @@ PROCEDURE CreerExemplaire(tab_numInv tabNumInv, isbn NUMBER) IS
                 RAISE_APPLICATION_ERROR(-20001, numInv || ' existe déjà');
             END IF;
     END;
-    
+
 PROCEDURE SupExemplaire(tab_numInv tabNumInv) IS
     numInvSup EXEMPLAIRE.NUMINV%TYPE;
     Pas_exemplaire EXCEPTION;
@@ -106,42 +78,3 @@ PROCEDURE SupExemplaire(tab_numInv tabNumInv) IS
     END;
 
 END;
-
-
-/*
-* Test
-*/
--- CreerAdherent
-EXECUTE MAJ.CreerAdherent(4, 'Mario', 'Super', 'Super Mario Bros');
--- CreerLivre
-declare auteurs MAJ.tabChaine;
-begin
-    auteurs := MAJ.tabChaine();
-    auteurs.extend;
-    auteurs(1) := '831b';
-    auteurs.extend;
-    auteurs(2) := '831a';
-    MAJ.CreerLivre(666, 'Herobrine, true story', 'Mojang', 2018, auteurs, 0, NULL);
-end;
--- CreerExemplaire
-declare numInv MAJ.tabNumInv;
-begin
-    numInv := MAJ.tabNumInv();
-    numInv.extend;
-    numInv(1) := '1';
-    numInv.extend;
-    numInv(2) := '2';
-    numInv.extend;
-    numInv(3) := '3';
-    MAJ.CreerExemplaire(numInv, 666);
-end;
--- SupExemplaire
-declare numInv MAJ.tabNumInv;
-begin
-    numInv := MAJ.tabNumInv();
-    numInv.extend;
-    numInv(1) := 6663;
-    numInv.extend;
-    numInv(2) := 6662;
-    MAJ.SupExemplaire(numInv);
-end;
