@@ -1,0 +1,237 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[frenchb]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{authblk}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titling}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[none]{hyphenat}
+
+ \geometry{
+ a4paper,
+ total={169mm,240mm},
+ left=16mm,
+ top=20mm,
+ }
+
+\usepackage{listings} % For code coloration
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codecodegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{cyan}{rgb}{0.0,0.0,0.6}
+
+
+
+% \headheight = 14pt
+
+\hypersetup{colorlinks = true,citecolor=black,filecolor=black,linkcolor=black,urlcolor=black}
+
+\lstdefinestyle{s}{
+  backgroundcolor=\color{backcolour},   commentstyle=\color{codegreen},
+  keywordstyle=\color{NavyBlue},
+  numberstyle=\tiny\color{codecodegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\footnotesize,
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=4
+}
+
+
+\lstset{style=s}
+\lstdefinelanguage{XML}
+{  
+  breakatwhitespace=false,         
+  breaklines=true,
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  stringstyle=\color{black},
+  identifierstyle=\color{cyan},
+  keywordstyle=\color{darkblue},
+  morekeywords={xmlns,version,type}
+}
+
+\lstset{literate=
+  {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+  {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+  {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+  {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+  {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+  {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+  {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+  {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+  {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+  {ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+  {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+  {€}{{\EUR}}1 {£}{{\pounds}}1 {°}{{\no}}1
+}
+
+
+
+\pretitle{ 
+  \begin{center}
+  \includegraphics[width=60mm,height=31mm]{univ.png}
+  \qquad \qquad
+  \includegraphics[width=37mm,height=31mm]{iutNantes.jpg}\\[\bigskipamount]
+}
+\posttitle{\end{center}}
+
+\title{\huge{Concurrence d’accès}\\
+\normalsize Donnée Repartie}
+\date{\today}
+\author{Paul Orhon \\
+\small LP -- MiAR -- Université de Nantes }
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Paul Orhon --- \small LP -- MiAR}
+\lhead{Concurrence d’accès --- Donnée Repartie}
+\rfoot{Page \thepage}
+\lfoot{INSTITUT UNIVERSITAIRE DE TECHNOLOGIE - NANTES}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\clearpage
+
+\section{LECTURE/ECRITURE}
+\subsection{Fonctionnement par défaut}
+\subsubsection{Que voit-on?}
+
+On observe que l'ajout de l'employer n'est pas visible sur les deux premier \textbf{SELECT} de la première fenêtre. 
+\begin{lstlisting}[caption= Premier et deuxième select * from employe;]
+    NUEMPL NOMEMPL                   HEBDO     AFFECT
+---------- -------------------- ---------- ----------
+        .. ...                          ..          .
+        65 simone                       30          5
+        67 bertrand                     35          5
+        73 germaine                     30          5
+
+21 lignes sélectionnées. 
+\end{lstlisting}
+
+Mais le nouveau employer est visible sur le dernier, apprêt le commit de la deuxième fenêtre.
+\begin{lstlisting}[caption= Dernier select * from employe;]
+    NUEMPL NOMEMPL                   HEBDO     AFFECT
+---------- -------------------- ---------- ----------
+        .. ...                          ..          .
+        67 bertrand                     35          5
+        73 germaine                     30          5
+        99 steve                        20          1
+    
+22 lignes sélectionnées. 
+\end{lstlisting}
+
+
+\subsubsection{On ne voit pas toujours la même chose dans une transaction}
+
+L'employer que l'on veux supprimer est toujours visible sur les deux premier \textbf{SELECT}.
+\begin{lstlisting}[caption= Premier et deuxième select * from employe;]
+    NUEMPL NOMEMPL                   HEBDO     AFFECT
+---------- -------------------- ---------- ----------
+        .. ...                          ..          .
+        67 bertrand                     35          5
+        73 germaine                     30          5
+        99 steve                        20          1
+    
+22 lignes sélectionnées. 
+\end{lstlisting}
+
+Mais le n'ai plus apprêt le commit de la deuxième fenêtre.
+\begin{lstlisting}[caption= Dernier select * from employe;]
+    NUEMPL NOMEMPL                   HEBDO     AFFECT
+---------- -------------------- ---------- ----------
+        .. ...                          ..          .
+        65 simone                       30          5
+        67 bertrand                     35          5
+        73 germaine                     30          5
+
+21 lignes sélectionnées. 
+\end{lstlisting}
+
+
+\subsection{Transaction read only}
+\subsubsection{On voit toujours la même chose}
+
+Durant toute la duré du \textbf{"set transaction read only;"}, dans la première fenêtre, tout les \textbf{SELECT} affiche la même chose peut importe si la deuxième fenêtre réalise des commit entre le \textbf{"set transaction read only;"} et le \textbf{commit} de la première fenêtre.
+
+\begin{lstlisting}[caption= select * from employe;]
+    NUEMPL NOMEMPL                   HEBDO     AFFECT
+---------- -------------------- ---------- ----------
+        .. ...                          ..          .
+        65 simone                       30          5
+        67 bertrand                     35          5
+        73 germaine                     30          5
+
+21 lignes sélectionnées. 
+\end{lstlisting}
+
+\section{ECRITURE/ECRITURE}
+\subsection{Fonctionnement par défaut}
+\subsubsection{Parfois on croit faire quelque chose et on ne fait rien}
+L'or de l'\textbf{UPDATE} de la fenêtre 2 le message de retour est \textit{0 lignes mis à jour}, car la fenêtre 1 a créer l'employer \textit{99} seulement pour lui jusqu'à se qui réalise un commit.
+\\
+Résultat la requête \textbf{"update employe set hebdo=0 where nuempl=99;"} na rient modifier et la ligne est toujours celle ajouter.
+\begin{lstlisting}[caption= select * from employe;]
+    NUEMPL NOMEMPL                   HEBDO     AFFECT
+---------- -------------------- ---------- ----------
+        .. ...                          ..          .
+        73 germaine                     30          5
+        99 steve                        20          1
+\end{lstlisting}
+
+\subsubsection{Ça verrouille}
+Le \textbf{delete} de la fenêtre 1 demande un verrou \textit{row exclusive} (RX) sur la table et un verrou \textit{exclusive} (X) sur les lignes. C'est pourquoi l'\textbf{UPDATE} de la fenêtre 2 est mis en attente jusqu'à l'exécution du commit de la fenêtre 1. Quand l'\textbf{UPDATE} s'exécute finalement, il met à jour 0 ligne. Et le \textbf{SELECT} final retourne 0 ligne.
+
+\subsubsection{Parfois ça coince}
+Il y a un interblocage.
+\\
+La fenêtre 1 réalise un \textbf{UPDATE} sur l'employer \no23, donc pose un verrou.
+\\
+La fenêtre 2 réalise un \textbf{UPDATE} sur l'employer \no39, et pose un verrou.
+\\
+La fenêtre 2 veut réalise un \textbf{UPDATE} sur l'employer \no23, mais il est verrouiller par la fenêtre 1. Il est mit en attente.
+\\
+La fenêtre 1 veut réalise un \textbf{UPDATE} sur l'employer \no39, mais il est verrouiller par la fenêtre 2. Il est mit en attente.
+\\
+A ce moment là, oracle détecte l'interblocage et annule une transaction.
+\\
+\textit{ORA-00060: détection d'interblocage pendant l'attente d'une ressource}
+
+\subsubsection{Avec les contraintes de type références il y a un problème}
+On peut observer qu'a la suite des deux \textbf{commit} les contraintes ne sont pas respecter.
+\begin{lstlisting}[caption= select * from employe where nuempl=17;]
+aucune ligne sélectionnée
+\end{lstlisting}
+
+\begin{lstlisting}[caption= select * from travail where nuempl=17;]
+    NUEMPL     NUPROJ      DUREE
+---------- ---------- ----------
+        17        135          5 
+\end{lstlisting}
+
+\subsubsection{Si la contrainte est décrite Oracle pose des verrous et ça marche}
+
+
+\end{document}
