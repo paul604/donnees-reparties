@@ -3,3 +3,5 @@ CREATE DATABASE LINK vers_Nantes
     using 'db1';
 
 SELECT * from i10a02a.LIVRE@vers_Nantes;
+
+INSERT into EXEMPLAIRE VALUES(0000, 0000);
