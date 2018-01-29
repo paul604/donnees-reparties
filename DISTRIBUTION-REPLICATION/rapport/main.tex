@@ -1,0 +1,269 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[frenchb]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{authblk}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titling}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[none]{hyphenat}
+
+ \geometry{
+ a4paper,
+ total={169mm,240mm},
+ left=16mm,
+ top=20mm,
+ }
+
+\usepackage{listings} % For code coloration
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codecodegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{cyan}{rgb}{0.0,0.0,0.6}
+
+
+
+% \headheight = 14pt
+
+\hypersetup{colorlinks = true,citecolor=black,filecolor=black,linkcolor=black,urlcolor=black}
+
+\lstdefinestyle{s}{
+  backgroundcolor=\color{backcolour},   commentstyle=\color{codegreen},
+  keywordstyle=\color{NavyBlue},
+  numberstyle=\tiny\color{codecodegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\footnotesize,
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=4
+}
+
+
+\lstset{style=s}
+\lstdefinelanguage{XML}
+{  
+  breakatwhitespace=false,         
+  breaklines=true,
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  stringstyle=\color{black},
+  identifierstyle=\color{cyan},
+  keywordstyle=\color{darkblue},
+  morekeywords={xmlns,version,type}
+}
+
+\lstset{literate=
+  {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+  {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+  {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+  {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+  {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+  {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+  {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+  {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+  {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+  {ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+  {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+  {€}{{\EUR}}1 {£}{{\pounds}}1 {°}{{\no}}1
+}
+
+
+
+\pretitle{ 
+  \begin{center}
+  \includegraphics[width=60mm,height=31mm]{univ.png}
+  \qquad \qquad
+  \includegraphics[width=37mm,height=31mm]{iutNantes.jpg}\\[\bigskipamount]
+}
+\posttitle{\end{center}}
+
+\title{\huge{TD Distribution – Replication}\\
+\normalsize Donnée Repartie}
+\date{\today}
+\author{Paul Orhon \\
+\small LP -- MiAR -- Université de Nantes }
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Paul Orhon --- \small LP -- MiAR}
+\lhead{TD Distribution – Replication --- Donnée Repartie}
+\rfoot{Page \thepage}
+\lfoot{INSTITUT UNIVERSITAIRE DE TECHNOLOGIE - NANTES}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\clearpage
+
+\section{Notre bibliothèque s'agrandit}
+\subsection{Question 1}
+Les tables requises sur DB2 sont:
+\begin{itemize}
+    \item Emprunt
+    \item Exemplaire
+    \item ExemplaireEmprunte
+\end{itemize}
+Pour le détail voir le fichier \href{https://github.com/paul604/donnees-reparties/blob/master/DISTRIBUTION-REPLICATION/CreationServeur2.sql}{CreationServeur2.sql}
+\\
+
+Pour éviter des problème de cohérence des donnée il faut verrouiller les table présente sur les deux bd avant un \textbf{insert} ou un \textbf{update}.
+\begin{lstlisting}[language=SQL, caption= Trigger lock Exemplaire]
+create or replace TRIGGER Lock_Exemplaire_Ins_Up
+BEFORE INSERT OR UPDATE ON Exemplaire 
+BEGIN
+  LOCK TABLE Exemplaire IN SHARE MODE;
+  LOCK TABLE Exemplaire@vers_Angers IN SHARE MODE;
+END;
+\end{lstlisting}
+
+\subsection{Question 2}
+Pour que le champ \textbf{ISBN} de la table \textbf{EXEMPLAIRE} de la BD2 référence au champ \textbf{ISBN} de la table \textbf{LIVRE} de la BD1 il faut ajouter un trigger.
+
+\label{lst:1}
+\begin{lstlisting}[language=SQL, caption= Trigger]
+CREATE OR replace TRIGGER Isbn_ex_ref_livre_to_BD1
+    AFTER INSERT OR UPDATE on EXEMPLAIRE
+    DECLARE
+    rec_ex EXEMPLAIRE%rowtype;
+begin
+    SELECT * INTO rec_ex
+        FROM EXEMPLAIRE 
+        WHERE ISBN not IN
+            (SELECT LIVRE.ISBN FROM LIVRE@vers_Nantes);
+    raise_application_error (-20202,'viol de fk ISBN'); 
+EXCEPTION
+    WHEN no_data_found then NULL;
+    WHEN too_many_rows then
+        raise_application_error (-20202,'viol de fk ISBN');
+END;
+\end{lstlisting}
+
+Ce trigger permet, apprêt un \textbf{insert} ou un \textbf{update} de la table \textbf{EXEMPLAIRE} de BD2, de vérifier la présence des \textbf{ISBN} de cette table dans la table \textbf{LIVRE} de BD1. Si le \textbf{selecte} %ligne???%
+trouve 0 enregistrement il n'y a pas de problème, mais si il trouve 1 ou plusieurs enregistrement il lève une exception. 
+\\
+
+Pour vérifier que le champ \textbf{numA} de la table \textbf{EMPRUNT} du serveur BD2, référence le champ \textbf{numA} de la table \textbf{ADHERENT} du serveur BD1 on met en place un trigger identique au précédant (\ref{lst:1}) mais en replacent \textbf{EXEMPLAIRE} par \textbf{EMPRUNT} et \textbf{LIVRE} par \textbf{ADHERENT} et en changent le deuxième selecte par \textit{ADHERENT.NUMA}.
+\\
+
+Il faut aussi créer un trigger pour verrouiller les table lors de changement.
+Avant un \textbf{insert} ou un \textbf{update} sur \textbf{EXEMPLAIRE} du serveur BD2 il faut verrouiller la table \textbf{LIVRE}:
+\begin{lstlisting}[language=SQL, caption= Trigger]
+CREATE OR replace TRIGGER Lock_Livre_toBD1
+    BEFORE INSERT OR UPDATE ON EXEMPLAIRE
+BEGIN
+    lock table LIVRE@vers_Nantes in share mode;
+end;
+\end{lstlisting}
+Et pour un \textbf{insert} ou un \textbf{update} sur la table \textbf{EMPRUNT} du serveur BD2 il faut verrouiller la table \textbf{ADHERENT}.
+
+
+\subsection{Question 3}
+Pour que le champ \textbf{ISBN} de la table \textbf{LIVRE} de la BD1 référence au champ \textbf{ISBN} de la table \textbf{EXEMPLAIRE} de la BD2 il faut ajouter un trigger.
+
+\label{lst:2}
+\begin{lstlisting}[language=SQL, caption= Trigger]
+CREATE OR replace TRIGGER  Isbn_livre_isRefBy_ex_to_BD2
+    AFTER DELETE ON LIVRE
+    DECLARE
+    rec_ex EXEMPLAIRE@vers_Angers%rowtype;
+begin
+    SELECT * INTO rec_ex 
+        FROM EXEMPLAIRE@vers_Angers
+        WHERE ISBN not IN
+            (SELECT LIVRE.ISBN FROM LIVRE);
+    raise_application_error (-20202,'viol de fk ISBN. Enfant dans BD2'); 
+EXCEPTION
+    WHEN no_data_found then NULL;
+    WHEN too_many_rows then
+        raise_application_error (-20202,'viol de fk ISBN. Enfants dans BD2');
+END;
+\end{lstlisting}
+
+Ce trigger permet, avant un \textbf{delete} sur la table \textbf{LIVRE} de BD1, de vérifier la présence des \textbf{ISBN} de cette table dans la table \textbf{EXEMPLAIRE} de BD2. Si le \textbf{selecte} %ligne???%
+trouve 0 enregistrement il n'y a pas de problème, mais si il trouve 1 ou plusieurs enregistrement il lève une exception. 
+\\
+
+Pour vérifier que le champ \textbf{numA} de la table \textbf{ADHERENT} du serveur BD1, référence le champ \textbf{numA} de la table \textbf{EMPRUNT} du serveur BD2 on met en place un trigger identique au précédant (\ref{lst:2}) mais en replacent \textbf{LIVRE} par \textbf{ADHERENT} et \textbf{EXEMPLAIRE} par \textbf{EMPRUNT} et en changent le deuxième selecte par \textit{ADHERENT.NUMA}.
+\\
+
+Il faut aussi créer un trigger pour verrouiller les table lors de changement.
+Avant un \textbf{delete} sur \textbf{LIVRE} il faut verrouiller la table \textbf{EXEMPLAIRE} du serveur BD2:
+\begin{lstlisting}[language=SQL, caption= Trigger]
+CREATE OR replace TRIGGER Lock_ex_toBD2
+BEFORE DELETE ON LIVRE
+BEGIN
+lock table EXEMPLAIRE@vers_Angers in share mode;
+end;
+\end{lstlisting}
+Et pour un \textbf{delete} sur la table \textbf{ADHERENT} il faut verrouiller la table \textbf{EMPRUNT} du serveur BD2.
+
+
+\subsection{Question 4}
+Pour mettre à jour le compteur, la date et le lieu d'emprunt
+dans la table \textbf{LIVRE} de BD1, on peur copier et modifier le trigger déjà présent dans BD1.
+\begin{lstlisting}[language=SQL, caption= Trigger up\_val\_livre\_DB1]
+create or replace trigger up_val_livre_DB1
+    AFTER INSERT ON EXEMPLAIREEMPRUNTE for each row
+BEGIN
+    UPDATE LIVRE@vers_Nantes
+        SET NBE = NBE+1,
+            DATEDE = :NEW.dateE,
+            LIEUDE = 'Angers'
+        WHERE ISBN = (
+            SELECT ISBN 
+            FROM EXEMPLAIRE 
+            where EXEMPLAIRE.NUMINV = :NEW.numInv 
+        );
+END;
+\end{lstlisting}
+
+
+\subsection{Question 5}
+Pour cette question il ne faut pas oublier les triggers qui lock les table \textbf{EXEMPLAIREEMPRUNTE} dans les deux serveur pour éviter les problèmes.
+Ils ont été réaliser à la question 1.
+\\
+
+Ensuite on reprend le trigger déjà réaliser sur le serveur 1 qui permet de ne pas emprunter plus de 5 exemplaire que l'on modifi et que l'on place sur les deux serverreur, en remodifiant les @vers\_*.
+\begin{lstlisting}[language=SQL, caption= Trigger Max exemplaire DB2]
+create or replace TRIGGER max_exem_emp
+    AFTER INSERT on EXEMPLAIREEMPRUNTE
+    declare
+        ligne_exem_emp ADHERENT@vers_Nantes%rowtype;
+begin
+    SELECT * into ligne_exem_emp FROM ADHERENT@vers_Nantes 
+        WHERE (
+            (SELECT COUNT(*) FROM EXEMPLAIREEMPRUNTE exN
+                WHERE ADHERENT.NUMA=exN.NUMA)
+            +
+            (SELECT COUNT(*) FROM EXEMPLAIREEMPRUNTE@vers_Nantes exA
+                WHERE ADHERENT.NUMA=exA.NUMA)
+        )>5;
+    raise_application_error (-20001, 'un adhérant a emprunté plus de 5 exemplaires');
+    exception
+        when no_data_found then null;
+        when too_many_rows then
+    raise_application_error (-20002, 'des adhérants ont emprunté plus de 5 exemplaires');
+end;
+\end{lstlisting}
+
+\end{document}
