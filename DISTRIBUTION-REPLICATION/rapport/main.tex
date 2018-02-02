@@ -99,7 +99,7 @@
 \normalsize Donnée Repartie}
 \date{\today}
 \author{Paul Orhon \\
-\small LP -- MiAR -- Université de Nantes }
+\small LP -- MiAR -- Université de Nantes } 
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -112,6 +112,7 @@
 
 \maketitle
 \tableofcontents
+\lstlistoflistings
 
 \clearpage
 
@@ -127,7 +128,7 @@ Pour le détail voir le fichier \href{https://github.com/paul604/donnees-reparti
 \\
 
 Pour éviter des problème de cohérence des donnée il faut verrouiller les table présente sur les deux bd avant un \textbf{insert} ou un \textbf{update}.
-\begin{lstlisting}[language=SQL, caption= Trigger lock Exemplaire]
+\begin{lstlisting}[language=SQL, caption= Trigger: lock Exemplaire]
 create or replace TRIGGER Lock_Exemplaire_Ins_Up
 BEFORE INSERT OR UPDATE ON Exemplaire 
 BEGIN
@@ -140,7 +141,7 @@ END;
 Pour que le champ \textbf{ISBN} de la table \textbf{EXEMPLAIRE} de la BD2 référence au champ \textbf{ISBN} de la table \textbf{LIVRE} de la BD1 il faut ajouter un trigger.
 
 \label{lst:1}
-\begin{lstlisting}[language=SQL, caption= Trigger]
+\begin{lstlisting}[language=SQL, caption= Trigger: ISBN exemplaire ref livre]
 CREATE OR replace TRIGGER Isbn_ex_ref_livre_to_BD1
     AFTER INSERT OR UPDATE on EXEMPLAIRE
     DECLARE
@@ -167,7 +168,7 @@ Pour vérifier que le champ \textbf{numA} de la table \textbf{EMPRUNT} du serveu
 
 Il faut aussi créer un trigger pour verrouiller les table lors de changement.
 Avant un \textbf{insert} ou un \textbf{update} sur \textbf{EXEMPLAIRE} du serveur BD2 il faut verrouiller la table \textbf{LIVRE}:
-\begin{lstlisting}[language=SQL, caption= Trigger]
+\begin{lstlisting}[language=SQL, caption= Trigger: lock livre BD1]
 CREATE OR replace TRIGGER Lock_Livre_toBD1
     BEFORE INSERT OR UPDATE ON EXEMPLAIRE
 BEGIN
@@ -181,7 +182,7 @@ Et pour un \textbf{insert} ou un \textbf{update} sur la table \textbf{EMPRUNT} d
 Pour que le champ \textbf{ISBN} de la table \textbf{LIVRE} de la BD1 référence au champ \textbf{ISBN} de la table \textbf{EXEMPLAIRE} de la BD2 il faut ajouter un trigger.
 
 \label{lst:2}
-\begin{lstlisting}[language=SQL, caption= Trigger]
+\begin{lstlisting}[language=SQL, caption= Trigger: ISBN livre ref exemplaire]
 CREATE OR replace TRIGGER  Isbn_livre_isRefBy_ex_to_BD2
     AFTER DELETE ON LIVRE
     DECLARE
@@ -208,7 +209,7 @@ Pour vérifier que le champ \textbf{numA} de la table \textbf{ADHERENT} du serve
 
 Il faut aussi créer un trigger pour verrouiller les table lors de changement.
 Avant un \textbf{delete} sur \textbf{LIVRE} il faut verrouiller la table \textbf{EXEMPLAIRE} du serveur BD2:
-\begin{lstlisting}[language=SQL, caption= Trigger]
+\begin{lstlisting}[language=SQL, caption= Trigger: lock exemplaire]
 CREATE OR replace TRIGGER Lock_ex_toBD2
 BEFORE DELETE ON LIVRE
 BEGIN
@@ -221,7 +222,7 @@ Et pour un \textbf{delete} sur la table \textbf{ADHERENT} il faut verrouiller la
 \subsection{Question 4}
 Pour mettre à jour le compteur, la date et le lieu d'emprunt
 dans la table \textbf{LIVRE} de BD1, on peur copier et modifier le trigger déjà présent dans BD1.
-\begin{lstlisting}[language=SQL, caption= Trigger up\_val\_livre\_DB1]
+\begin{lstlisting}[language=SQL, caption= Trigger: mise à jour des valeur de livre]
 create or replace trigger up_val_livre_DB1
     AFTER INSERT ON EXEMPLAIREEMPRUNTE for each row
 BEGIN
@@ -244,7 +245,7 @@ Ils ont été réaliser à la question 1.
 \\
 
 Ensuite on reprend le trigger déjà réaliser sur le serveur 1 qui permet de ne pas emprunter plus de 5 exemplaire que l'on modifie et que l'on place sur les deux serveur, en remodifiant les @vers\_*.
-\begin{lstlisting}[language=SQL, caption= Trigger Max exemplaire DB2]
+\begin{lstlisting}[language=SQL, caption= Trigger: Max exemplaire DB2]
 create or replace TRIGGER max_exem_emp
     AFTER INSERT on EXEMPLAIREEMPRUNTE
     declare
@@ -304,7 +305,7 @@ PROCEDURE listEmpruntsForAdherent(idAdh NUMBER, liste out liste_Cursor) IS
 \subsection{Question 7}
 Les principaux problèmes posés par le partage d'une table en lecture/écriture est la cohérence des données et la mise à jour de ces données. Par exemple si un adhérant avec un \textbf{numA} à 5 est créer sur la table de BD1 et de BD2 on ne sait pas le quelle prendre en compte l'or de la mise en commun des données.
 
-\subsubsection{Question 8}
+\subsection{Question 8}
 Pour réaliser le partage en lecture seule de la table adhérent de BD1 vers BD2, il faut mètre en place une table de log d'adhérent.
 \begin{lstlisting}[language=SQL, caption= Log d'adhérant sur BD1]
 CREATE MATERIALIZED view log on Adherent;
@@ -318,7 +319,7 @@ CREATE MATERIALIZED view Adherent_view
     as select * from Adherent;
 \end{lstlisting}
 
-\subsubsection{Question 9}
+\subsection{Question 9}
 Il suffi de prendre le trigger existant et d'ajouter un select vers la table \textbf{exemplaireEmprunte} de l'autre serveur.
 
 \begin{lstlisting}[language=SQL, caption= Trigger max exemplaire emprunter version BD1]
