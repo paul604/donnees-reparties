@@ -40,19 +40,19 @@ PROCEDURE listLivre(liste out liste_Cursor) IS
         OPEN liste FOR
             SELECT ISBN, Titre,
                 (SELECT COUNT(*) from(
-                    select numinv
-                    FROM EXEMPLAIRE ex
+                    select numinv, liv.ISBN
+                    FROM EXEMPLAIRE ex, Livre liv
                     WHERE ex.ISBN = liv.ISBN
 
                 union all
 
-                    select numinv
-                    FROM EXEMPLAIRE@vers_Angers ex
+                    select numinv, liv.ISBN
+                    FROM EXEMPLAIRE@vers_Angers ex, Livre liv
                     WHERE ex.ISBN = liv.ISBN
-                )) nb_exemplaire,
+                )GROUP BY ISBN) nb_exemplaire,
                 (SELECT COUNT(*) FROM (
-                    select numinv 
-                    From EXEMPLAIRE ex
+                    select numinv, liv.ISBN
+                    From EXEMPLAIRE ex, Livre liv
                     WHERE ex.ISBN = liv.ISBN
                         AND ex.NUMINV NOT IN (
                             SELECT NUMINV
@@ -61,14 +61,14 @@ PROCEDURE listLivre(liste out liste_Cursor) IS
 
                     union all
 
-                    select numinv 
-                    From EXEMPLAIRE@vers_Angers ex
+                    select numinv, liv.ISBN
+                    From EXEMPLAIRE@vers_Angers ex, Livre liv
                     WHERE ex.ISBN = liv.ISBN
                         AND ex.NUMINV NOT IN (
                             SELECT NUMINV
                             FROM EXEMPLAIREEMPRUNTE@vers_Angers exEp
                         )
-                )) nb_libre
+                )GROUP BY ISBN) nb_libre
             FROM Livre liv;
         COMMIT;
     END;
@@ -91,9 +91,9 @@ PROCEDURE listAdherentRetard(liste out liste_Cursor) IS
                         AND emp.dateE = exEmp.dateE
                         AND exEmp.NUMINV = ex.NUMINV
                         AND ex.ISBN = liv.ISBN
-                
+
                 union all
-                
+
                     select adh.numA, adh.NOM, emp.DATEE, exEmp.NUMINV, liv.TITRE
                     From ADHERENT adh,
                     EMPRUNT@vers_Angers emp,
@@ -107,7 +107,7 @@ PROCEDURE listAdherentRetard(liste out liste_Cursor) IS
                         AND exEmp.NUMINV = ex.NUMINV
                         AND ex.ISBN = liv.ISBN
                 )
-                
+
         COMMIT;
         END;
 END;

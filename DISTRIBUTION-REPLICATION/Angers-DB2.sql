@@ -11,4 +11,4 @@ CREATE MATERIALIZED view Adherent_view
     refresh force
     start with sysdate
     next sysdate+1/1440
-    as select * from Adherent;
+    as select * from Adherent@vers_Nantes;
