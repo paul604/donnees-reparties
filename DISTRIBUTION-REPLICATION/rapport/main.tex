@@ -243,7 +243,7 @@ Pour cette question il ne faut pas oublier les triggers qui lock les table \text
 Ils ont été réaliser à la question 1.
 \\
 
-Ensuite on reprend le trigger déjà réaliser sur le serveur 1 qui permet de ne pas emprunter plus de 5 exemplaire que l'on modifi et que l'on place sur les deux serverreur, en remodifiant les @vers\_*.
+Ensuite on reprend le trigger déjà réaliser sur le serveur 1 qui permet de ne pas emprunter plus de 5 exemplaire que l'on modifie et que l'on place sur les deux serveur, en remodifiant les @vers\_*.
 \begin{lstlisting}[language=SQL, caption= Trigger Max exemplaire DB2]
 create or replace TRIGGER max_exem_emp
     AFTER INSERT on EXEMPLAIREEMPRUNTE
@@ -256,6 +256,83 @@ begin
                 WHERE ADHERENT.NUMA=exN.NUMA)
             +
             (SELECT COUNT(*) FROM EXEMPLAIREEMPRUNTE@vers_Nantes exA
+                WHERE ADHERENT.NUMA=exA.NUMA)
+        )>5;
+    raise_application_error (-20001, 'un adhérant a emprunté plus de 5 exemplaires');
+    exception
+        when no_data_found then null;
+        when too_many_rows then
+    raise_application_error (-20002, 'des adhérants ont emprunté plus de 5 exemplaires');
+end;
+\end{lstlisting}
+
+\subsection{Question 6}
+Sur BD1 il faut seulement modifier le package \textit{Lecture} pour prendre en compte BD2. Pour le package \textit{Maj} il n'est pas utile de prendre en compte BD2 car les mise à jour des table doive s'effectuer seulement sur la base actuelle.
+\\
+
+Sur BD2 il faut mètre à jour le package \textit{Lecture} pour prendre en compte BD1, et le package \textit{Maj} pour réaliser les modification utile sur BD1 (la création d'adhérant).
+\begin{lstlisting}[language=SQL, caption= Un procédure de \textit{Lecture} sur BD1]
+PROCEDURE listEmpruntsForAdherent(idAdh NUMBER, liste out liste_Cursor) IS
+    BEGIN
+        SET TRANSACTION READ ONLY;
+        OPEN liste FOR select * from(
+            SELECT Exemplaire.NUMINV, Livre.titre
+                FROM Livre, EXEMPLAIRE
+                WHERE Livre.ISBN = EXEMPLAIRE.ISBN
+                    AND EXEMPLAIRE.numInv IN (
+                        SELECT numInv
+                        FROM ExemplaireEmprunte
+                        WHERE numA = idAdh
+                    )
+
+            Union all
+
+            SELECT exA.NUMINV, Livre.titre
+                FROM Livre, EXEMPLAIRE@vers_Angers exA
+                WHERE Livre.ISBN = exA.ISBN
+                    AND exA.numInv IN (
+                        SELECT numInv
+                        FROM ExemplaireEmprunte@vers_Angers
+                        WHERE numA = idAdh
+                    )
+        );
+        COMMIT;
+    END;
+\end{lstlisting}
+
+\section{La centralisation des adhérents}
+\subsection{Question 7}
+Les principaux problèmes posés par le partage d'une table en lecture/écriture est la cohérence des données et la mise à jour de ces données. Par exemple si un adhérant avec un \textbf{numA} à 5 est créer sur la table de BD1 et de BD2 on ne sait pas le quelle prendre en compte l'or de la mise en commun des données.
+
+\subsubsection{Question 8}
+Pour réaliser le partage en lecture seule de la table adhérent de BD1 vers BD2, il faut mètre en place une table de log d'adhérent.
+\begin{lstlisting}[language=SQL, caption= Log d'adhérant sur BD1]
+CREATE MATERIALIZED view log on Adherent;
+\end{lstlisting}
+Puis sur BD2 il faut créer la vue qui va, toute les minute, récupérer les mise à jour présente dans les log de la table adhérant.
+\begin{lstlisting}[language=SQL, caption= View d'adhérant sur BD2]
+CREATE MATERIALIZED view Adherent_view
+    refresh force
+    start with sysdate
+    next sysdate+1/1440
+    as select * from Adherent;
+\end{lstlisting}
+
+\subsubsection{Question 9}
+Il suffi de prendre le trigger existant et d'ajouter un select vers la table \textbf{exemplaireEmprunte} de l'autre serveur.
+
+\begin{lstlisting}[language=SQL, caption= Trigger max exemplaire emprunter version BD1]
+create or replace TRIGGER max_exem_emp
+    AFTER INSERT on EXEMPLAIREEMPRUNTE
+    declare
+        ligne_exem_emp ADHERENT%rowtype;
+begin
+    SELECT * into ligne_exem_emp FROM ADHERENT 
+        WHERE (
+            (SELECT COUNT(*) FROM EXEMPLAIREEMPRUNTE exN
+                WHERE ADHERENT.NUMA=exN.NUMA)
+            +
+            (SELECT COUNT(*) FROM EXEMPLAIREEMPRUNTE@vers_Angers exA
                 WHERE ADHERENT.NUMA=exA.NUMA)
         )>5;
     raise_application_error (-20001, 'un adhérant a emprunté plus de 5 exemplaires');
