@@ -20,8 +20,7 @@ public class DAOAdherent {
     public ArrayList<Adherent> read() {
         ArrayList<Adherent> adherents = new ArrayList<Adherent>();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT * from ADHERENT");
-            ResultSet resultSet = ps.executeQuery();
+            ResultSet resultSet = conn.createStatement().executeQuery("SELECT * from ADHERENT");
 
             while (resultSet.next()) {
                 adherents.add(new Adherent(resultSet.getInt(1),
